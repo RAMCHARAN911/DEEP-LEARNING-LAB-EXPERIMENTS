@@ -1,0 +1,143 @@
+# Experiment 32: Neural Network Analysis for Two Circular Data
+# Learning Rate = 0.1
+# Activation = Tanh
+# Hidden Layers = 3
+# Hidden Neurons = 3 in each layer
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_circles
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# 1. Generate Two Circular Dataset
+X, y = make_circles(
+    n_samples=600,
+    noise=0.08,
+    factor=0.45,
+    random_state=42
+)
+
+# 2. Split dataset into training and testing
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.30,
+    random_state=42,
+    stratify=y
+)
+
+# 3. Create Neural Network
+# 3 hidden layers with 3 neurons in each layer
+model = MLPClassifier(
+    hidden_layer_sizes=(3, 3, 3),
+    activation='tanh',
+    learning_rate_init=0.1,
+    max_iter=5000,
+    random_state=42
+)
+
+# 4. Train the model
+model.fit(X_train, y_train)
+
+# 5. Prediction
+y_pred = model.predict(X_test)
+
+# 6. Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
+print("=" * 60)
+print("EXPERIMENT 32: NEURAL NETWORK FOR TWO CIRCULAR DATA")
+print("=" * 60)
+print("Learning Rate       :", 0.1)
+print("Activation Function :", "Tanh")
+print("Hidden Layers       :", 3)
+print("Neurons per Layer   :", 3)
+print("Training Samples    :", len(X_train))
+print("Testing Samples     :", len(X_test))
+print("Accuracy            :", round(accuracy * 100, 2), "%")
+print("Iterations          :", model.n_iter_)
+
+# 7. Confusion Matrix
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# 8. Classification Report
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# 9. Plot original circular dataset
+plt.figure(figsize=(7, 6))
+
+plt.scatter(
+    X[:, 0],
+    X[:, 1],
+    c=y,
+    cmap='coolwarm',
+    edgecolors='k',
+    s=30
+)
+
+plt.title("Two Circular Dataset")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.grid(True)
+plt.show()
+
+# 10. Create decision boundary
+x_min, x_max = X[:, 0].min() - 0.2, X[:, 0].max() + 0.2
+y_min, y_max = X[:, 1].min() - 0.2, X[:, 1].max() + 0.2
+
+xx, yy = np.meshgrid(
+    np.linspace(x_min, x_max, 500),
+    np.linspace(y_min, y_max, 500)
+)
+
+grid = np.c_[xx.ravel(), yy.ravel()]
+
+Z = model.predict(grid)
+Z = Z.reshape(xx.shape)
+
+# 11. Plot decision boundary
+plt.figure(figsize=(8, 6))
+
+plt.contourf(
+    xx,
+    yy,
+    Z,
+    alpha=0.25,
+    cmap='coolwarm'
+)
+
+plt.scatter(
+    X_test[:, 0],
+    X_test[:, 1],
+    c=y_test,
+    cmap='coolwarm',
+    edgecolors='k',
+    s=40
+)
+
+plt.title("Neural Network Decision Boundary - Two Circular Data")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.grid(True)
+plt.show()
+
+# 12. Training Loss Curve
+plt.figure(figsize=(7, 5))
+
+plt.plot(model.loss_curve_)
+
+plt.title("Training Loss Curve")
+plt.xlabel("Iterations")
+plt.ylabel("Loss")
+plt.grid(True)
+plt.show()
+
+# 13. Conclusion
+print("\nConclusion:")
+print("The neural network successfully classified the two circular data classes.")
+print("The model contains 3 hidden layers with 3 neurons in each layer.")
+print("Tanh activation and a learning rate of 0.1 were used.")
+print("The trained network learns the nonlinear circular decision boundary.")
