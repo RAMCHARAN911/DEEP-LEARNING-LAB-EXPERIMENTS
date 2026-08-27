@@ -1,0 +1,150 @@
+# Experiment 23: Neural Network Analysis for Spiral Data
+# Learning Rate = 0.1
+# Activation = Sigmoid
+# Hidden Layers = 3
+# Hidden Neurons = 3 in each layer
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# 1. Generate Spiral Dataset
+np.random.seed(42)
+
+n = 500
+theta = np.sqrt(np.random.rand(n)) * 4 * np.pi
+
+# Class 0
+r_a = 2 * theta + np.pi
+X_a = np.c_[r_a * np.cos(theta), r_a * np.sin(theta)]
+y_a = np.zeros(n)
+
+# Class 1
+r_b = -2 * theta - np.pi
+X_b = np.c_[r_b * np.cos(theta), r_b * np.sin(theta)]
+y_b = np.ones(n)
+
+# Combine both classes
+X = np.vstack((X_a, X_b))
+y = np.hstack((y_a, y_b))
+
+# Add small noise
+X += np.random.normal(0, 0.2, X.shape)
+
+# 2. Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.30,
+    random_state=42,
+    stratify=y
+)
+
+# 3. Create Neural Network
+# 3 hidden layers, 3 neurons in each layer
+model = MLPClassifier(
+    hidden_layer_sizes=(3, 3, 3),
+    activation='logistic',       # Sigmoid activation
+    learning_rate_init=0.1,
+    max_iter=5000,
+    random_state=42
+)
+
+# 4. Train model
+model.fit(X_train, y_train)
+
+# 5. Prediction
+y_pred = model.predict(X_test)
+
+# 6. Accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
+print("=" * 55)
+print("EXPERIMENT 23: NEURAL NETWORK FOR SPIRAL DATA")
+print("=" * 55)
+print("Learning Rate       :", 0.1)
+print("Activation Function :", "Sigmoid")
+print("Hidden Layers       :", 3)
+print("Neurons per Layer   :", 3)
+print("Training Samples    :", len(X_train))
+print("Testing Samples     :", len(X_test))
+print("Accuracy            :", round(accuracy * 100, 2), "%")
+print("Iterations          :", model.n_iter_)
+
+# 7. Confusion Matrix
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# 8. Classification Report
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# 9. Plot Spiral Dataset
+plt.figure(figsize=(7, 6))
+plt.scatter(
+    X[:, 0], X[:, 1],
+    c=y,
+    cmap='coolwarm',
+    edgecolors='k',
+    s=20
+)
+plt.title("Spiral Dataset")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.grid(True)
+plt.show()
+
+# 10. Create decision boundary
+x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+
+xx, yy = np.meshgrid(
+    np.linspace(x_min, x_max, 500),
+    np.linspace(y_min, y_max, 500)
+)
+
+grid = np.c_[xx.ravel(), yy.ravel()]
+
+Z = model.predict(grid)
+Z = Z.reshape(xx.shape)
+
+# 11. Plot Decision Boundary
+plt.figure(figsize=(8, 6))
+
+plt.contourf(
+    xx, yy, Z,
+    alpha=0.25,
+    cmap='coolwarm'
+)
+
+plt.scatter(
+    X_test[:, 0],
+    X_test[:, 1],
+    c=y_test,
+    cmap='coolwarm',
+    edgecolors='k',
+    s=25
+)
+
+plt.title("Neural Network Decision Boundary - Spiral Data")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.grid(True)
+plt.show()
+
+# 12. Training Loss Curve
+plt.figure(figsize=(7, 5))
+plt.plot(model.loss_curve_)
+plt.title("Training Loss Curve")
+plt.xlabel("Iterations")
+plt.ylabel("Loss")
+plt.grid(True)
+plt.show()
+
+# 13. Conclusion
+print("\nConclusion:")
+print("The neural network was trained successfully on spiral data.")
+print("The model contains 3 hidden layers with 3 neurons in each layer.")
+print("Sigmoid activation and a learning rate of 0.1 were used.")
+print("The trained model learns the nonlinear spiral decision boundary.")
